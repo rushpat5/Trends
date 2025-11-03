@@ -13,9 +13,15 @@ def fetch_trends(keywords, timeframe='today 12-m', geo=''):
     for kw in keywords:
         if len(kw) > 100:
             raise ValueError(f"Keyword too long (100 chars max): {kw}")
+    # Clean geo
     geo = geo.strip().upper()
-    if geo == '':  # treat empty as worldwide
-        geo = ''
+    if geo and len(geo) != 2:
+        raise ValueError(f"Invalid geo code '{geo}'. Use two-letter country code or leave blank.")
+    # Validate timeframe format
+    valid_prefixes = ('today ', 'now ')
+    if not (timeframe.startswith(valid_prefixes) or ' ' in timeframe and timeframe[0:10].isdigit()):
+        raise ValueError(f"Invalid timeframe format '{timeframe}'. Examples: 'today 12-m', 'now 7-d', 'YYYY-MM-DD YYYY-MM-DD'")
+    # Connect and fetch
     pytrends = TrendReq(hl='en-US', tz=360, timeout=(10, 25))
     try:
         pytrends.build_payload(keywords, timeframe=timeframe, geo=geo)
