@@ -4,7 +4,7 @@ from pytrends.request import TrendReq
 from pytrends.exceptions import ResponseError
 
 @st.cache_data(show_spinner=False)
-def fetch_trends(keywords, timeframe='today 12-m', geo=''):
+def fetch_trends(keywords, timeframe='today 12-m', geo='IN'):
     # Validate input
     if not keywords:
         raise ValueError("Keyword list is empty.")
@@ -13,15 +13,15 @@ def fetch_trends(keywords, timeframe='today 12-m', geo=''):
     for kw in keywords:
         if len(kw) > 100:
             raise ValueError(f"Keyword too long (100 chars max): {kw}")
-    # Clean geo
-    geo = geo.strip().upper()
-    if geo and len(geo) != 2:
-        raise ValueError(f"Invalid geo code '{geo}'. Use two-letter country code or leave blank.")
+    geo = geo.strip().upper() or 'IN'
+    if len(geo) != 2:
+        raise ValueError(f"Invalid geo code '{geo}'. Use two-letter country code.")
     # Validate timeframe format
-    valid_prefixes = ('today ', 'now ')
-    if not (timeframe.startswith(valid_prefixes) or ' ' in timeframe and timeframe[0:10].isdigit()):
-        raise ValueError(f"Invalid timeframe format '{timeframe}'. Examples: 'today 12-m', 'now 7-d', 'YYYY-MM-DD YYYY-MM-DD'")
-    # Connect and fetch
+    # According to pytrends docs: for daily use 'now #-d' (1 or 7 days); for months use 'today #-m'. :contentReference[oaicite:0]{index=0}
+    if not (
+        timeframe.startswith('now ') or timeframe.startswith('today ') or ' ' in timeframe and timeframe[0:4].isdigit()
+    ):
+        raise ValueError(f"Invalid timeframe format '{timeframe}'. Examples: 'now 7-d', 'today 3-m', 'YYYY-MM-DD YYYY-MM-DD'")
     pytrends = TrendReq(hl='en-US', tz=360, timeout=(10, 25))
     try:
         pytrends.build_payload(keywords, timeframe=timeframe, geo=geo)
@@ -40,13 +40,13 @@ def main():
 
     st.sidebar.header("Input parameters")
     raw_input = st.sidebar.text_input("Enter comma-separated keywords", "keyword1, keyword2")
-    timeframe = st.sidebar.selectbox("Timeframe", ['today 7-d', 'today 1-m', 'today 12-m', 'all'])
-    geo = st.sidebar.text_input("Geo (country code, e.g., IN, US)", "")
+    timeframe = st.sidebar.selectbox("Timeframe", ['now 7-d', 'today 1-m', 'today 12-m', 'YYYY-MM-DD YYYY-MM-DD'])
+    geo = st.sidebar.text_input("Geo (country code, e.g., IN)", "IN")
 
     if st.sidebar.button("Fetch Trends"):
         keywords = [k.strip() for k in raw_input.split(',') if k.strip()]
         try:
-            st.info(f"Fetching trends for: {keywords} | Timeframe: {timeframe} | Geo: {geo or 'Worldwide'}")
+            st.info(f"Fetching trends for: {keywords} | Timeframe: {timeframe} | Geo: {geo or 'IN'}")
             df = fetch_trends(keywords, timeframe=timeframe, geo=geo)
         except ValueError as ve:
             st.error(f"Input error: {ve}")
