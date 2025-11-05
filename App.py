@@ -72,7 +72,7 @@ def fetch_trends(keywords, timeframe_label, geo='IN', max_retries=4, initial_bac
 
 def main():
     st.set_page_config(page_title="Keyword Trend Tracker", layout="wide")
-    apply(styles:=True)
+    apply(styles=True)
     st.markdown("<div class='main-title'>Keyword Trend Tracker</div>", unsafe_allow_html=True)
     st.markdown("<div class='subtitle'>Enter keywords to see search interest trends.</div>", unsafe_allow_html=True)
 
@@ -122,3 +122,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
