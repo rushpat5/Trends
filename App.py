@@ -9,25 +9,25 @@ def apply_styles():
         """
         <style>
         :root {
-            --bg-color: #121212;
-            --sidebar-bg: #1e1e1e;
-            --text-color: #e0e0e0;
-            --accent-color: #BB86FC;
+            --bg: #121212;
+            --sidebar-bg: #1E1E1E;
+            --text: #E0E0E0;
+            --accent: #BB86FC;
         }
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background-color: var(--bg);
+            color: var(--text);
         }
         .stSidebar {
             background-color: var(--sidebar-bg);
-            color: var(--text-color);
+            color: var(--text);
         }
         .stSidebar .stTextInput>div>div>input {
             background-color: #2a2a2a;
-            color: var(--text-color);
+            color: var(--text);
         }
         .stButton>button {
-            background-color: var(--accent-color);
+            background-color: var(--accent);
             color: #000;
             font-weight: bold;
             padding: 0.6em 1.0em;
@@ -36,13 +36,10 @@ def apply_styles():
         .stButton>button:hover {
             background-color: #9a54d6;
         }
-        .dataframe th, .dataframe td {
-            color: var(--text-color);
-        }
-        .main-title { text-align: center; font-size: 2.5rem; margin-top: 1.5rem; color: var(--accent-color); }
+        .main-title { text-align: center; font-size: 2.5rem; margin-top: 1.5rem; color: var(--accent); }
         .subtitle { text-align: center; font-size: 1.1rem; color: #a0a0a0; margin-bottom:2rem; }
         .card {
-            background-color: #1e1e1e;
+            background-color: #1E1E1E;
             padding: 1.4rem;
             border-radius: 0.6rem;
             margin-bottom: 1.8rem;
@@ -61,7 +58,7 @@ def fetch_trends(keywords, timeframe_label, geo='IN', max_retries=4, initial_bac
         raise ValueError("Maximum of 5 keywords allowed.")
     for kw in keywords:
         if len(kw) > 100:
-            raise ValueError(f"Keyword too long (100 chars max): '{kw}'")
+            raise ValueError(f"Keyword too long (max 100 chars): '{kw}'")
     geo_code = geo.strip().upper() or 'IN'
     if len(geo_code) != 2:
         raise ValueError("Geo must be a 2-letter country code (e.g., IN, US).")
@@ -82,7 +79,7 @@ def fetch_trends(keywords, timeframe_label, geo='IN', max_retries=4, initial_bac
             pytrends.build_payload(keywords, timeframe=timeframe, geo=geo_code)
             df = pytrends.interest_over_time()
             if df is None or df.empty:
-                raise RuntimeError("No data returned for given inputs.")
+                raise RuntimeError("No data returned for these inputs.")
             if 'isPartial' in df.columns:
                 df = df.drop(columns=['isPartial'])
             return df
@@ -100,17 +97,18 @@ def main():
     st.set_page_config(page_title="Keyword Trend Tracker", layout="wide")
     apply_styles()
     st.markdown("<div class='main-title'>Keyword Trend Tracker</div>", unsafe_allow_html=True)
-    st.markdown("<div class='subtitle'>Track and compare search trends over time.</div>", unsafe_allow_html=True)
+    st.markdown("<div class='subtitle'>Track & compare search interest trends — instant and clean.</div>", unsafe_allow_html=True)
 
     with st.sidebar:
-        st.header("Input Settings")
+        st.header("🚀 Input Settings")
         raw = st.text_input("Keywords (comma-separated)", value="fancy number, another phrase",
                             help="Enter up to 5 keywords separated by commas. Multi-word keywords allowed.")
         timeframe_choice = st.selectbox("Select Timeframe", ['Last 7 days', 'Last 1 month', 'Last 12 months'],
-                                        index=2, help="Choose how far back to fetch data.")
+                                        index=2, help="Choose timeframe for trend data.")
         geo = st.text_input("Geo (2-letter country code)", value="IN",
                             help="Default is IN (India).")
-        fetch_btn = st.button("🔍 Fetch Trends")
+
+        fetch_btn = st.button("🔍 Fetch Trends", use_container_width=True)
 
     if fetch_btn:
         keywords = [k.strip() for k in raw.split(',') if k.strip()]
