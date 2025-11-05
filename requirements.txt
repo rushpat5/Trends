@@ -2,4 +2,4 @@ streamlit
 pytrends
 pandas
 urllib3<2
-requests<2.30
+requests<2.28
